@@ -6,24 +6,20 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Assignment8 {
     private List<Integer> numbers = null;
     private AtomicInteger i = new AtomicInteger(0);
-    static Map<Integer, Integer> results = new ConcurrentHashMap<>();
+    static Map<Integer, LongAdder> results = new ConcurrentHashMap<>();
 	
-    
     public Assignment8() {
         try {
             // Make sure you download the output.txt file for Assignment 8
@@ -70,8 +66,9 @@ public class Assignment8 {
     }
     
     public void mapValues(List<Integer> data) {
-    	data.stream().forEach(i -> results.put(i, results.getOrDefault(i, 0) + 1));
-
+    	data.parallelStream().forEach(i -> {
+            results.computeIfAbsent(i, k -> new LongAdder()).increment();
+        });
     }
     
     public static void main(String[] args) { 
@@ -88,6 +85,7 @@ public class Assignment8 {
 		}
 		CompletableFuture.allOf(tasks.toArray(new CompletableFuture[tasks.size()])).join();
 		results.forEach((key, value) -> System.out.println(key + " : " + value));
+		System.exit(0);
 	}
     
 }
